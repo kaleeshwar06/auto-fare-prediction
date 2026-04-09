@@ -6,14 +6,9 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
-# -----------------------------
-# TITLE
-# -----------------------------
+
 st.title("Auto-Rickshaw Fare & Demand Prediction 🚖")
 
-# -----------------------------
-# LOAD & PREPROCESS DATA
-# -----------------------------
 df = pd.read_csv("autos.csv")
 
 df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_")
@@ -21,7 +16,6 @@ df = df.loc[:, ~df.columns.str.contains('^unnamed')]
 
 df = pd.get_dummies(df, columns=['city'], drop_first=True)
 
-# Create features (same as your project)
 df['distance'] = np.random.randint(1, 10, size=len(df))
 df['travel_time'] = np.random.randint(5, 30, size=len(df))
 
@@ -38,20 +32,14 @@ df['demand'] = df['hour'].apply(
     else np.random.randint(5, 15)
 )
 
-# -----------------------------
-# TRAIN MODELS
-# -----------------------------
 models = {
     "Linear Regression": LinearRegression(),
     "Random Forest": RandomForestRegressor(),
     "XGBoost": XGBRegressor()
 }
-
-# Train fare models
 for name in models:
     models[name].fit(df[['distance', 'travel_time']], df['fare'])
 
-# Train demand models
 demand_models = {
     "Linear Regression": LinearRegression(),
     "Random Forest": RandomForestRegressor(),
@@ -61,38 +49,25 @@ demand_models = {
 for name in demand_models:
     demand_models[name].fit(df[['hour']], df['demand'])
 
-# -----------------------------
-# USER INPUT
-# -----------------------------
 st.sidebar.header("Enter Inputs")
 
 distance = st.sidebar.slider("Distance (km)", 1, 20, 5)
 travel_time = st.sidebar.slider("Travel Time (min)", 5, 60, 20)
 hour = st.sidebar.slider("Hour", 0, 23, 10)
 
-# Model selection
 model_choice = st.sidebar.selectbox(
     "Select Model",
     ["Linear Regression", "Random Forest", "XGBoost"]
 )
 
-# -----------------------------
-# PREDICTION
-# -----------------------------
 fare_pred = models[model_choice].predict([[distance, travel_time]])[0]
 demand_pred = demand_models[model_choice].predict([[hour]])[0]
 
-# -----------------------------
-# OUTPUT
-# -----------------------------
 st.subheader(f"Results using {model_choice}")
 
 st.write(f"🚖 Predicted Fare: ₹ {fare_pred:.2f}")
 st.write(f"📊 Predicted Demand: {int(demand_pred)}")
 
-# -----------------------------
-# SHIFTING GRAPH
-# -----------------------------
 st.subheader("Demand Trend")
 
 hours = np.arange(0, 24)
